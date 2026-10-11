@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  avatar        String?
+  bio           String?
+  role          String     @default("creator")
+  clerkId       String     @unique
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  videos        Video[]
+  lessons       Lesson[]
+  comments      Comment[]
+  likes         Like[]
+  followers     Follow[]   @relation("follower")
+  following     Follow[]   @relation("following")
+  subscription  Subscription?
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  String
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Video {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  videoUrl        String
+  thumbnailUrl    String?
+  duration        Int       // in seconds
+  transcriptUrl   String?
+  transcript      String?
+  status          String    @default("processing")
+  
+  createdBy       User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  lesson          Lesson?
+  analysis        VideoAnalysis?
+}
+
+model VideoAnalysis {
+  id                String    @id @default(cuid())
+  video             Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId           String    @unique
+  
+  summary           String
+  topics            String[]  @default([])
+  chapters          Chapter[]
+  learningGoals     String[]  @default([])
+  confidence        Float     @default(0.96)
+  keyTakeaways      String[]  @default([])
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   Int      // in seconds
+  endTime     Int      // in seconds
+  order       Int
+  
+  analysis    VideoAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysisId  String
+}
+
+model Lesson {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  content         String    // Rich text content
+  thumbnail       String?
+  
+  video           Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId         String    @unique
+  
+  creator         User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById     String
+  
+  status          String    @default("draft")  // draft, published, archived
+  publishedAt     DateTime?
+  viewCount       Int       @default(0)
+  category        String?
+  tags            String[]  @default([])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  comments        Comment[]
+  likes           Like[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId  String
+  
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId  String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  
+  createdAt DateTime @default(now())
+
+  @@unique([lessonId, userId])
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String   @unique
+  
+  plan          String   @default("free")  // free, pro, enterprise
+  stripeId      String?
+  status        String   @default("active")  // active, cancelled, expired
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

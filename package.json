@@ -1,17 +1,33 @@
 {
   "name": "ai-video-learning-platform",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.29.0",
+    "@hookform/resolvers": "^3.3.4",
+    "@prisma/client": "^5.7.1",
+    "@supabase/supabase-js": "^2.38.4",
+    "@uploadthing/react": "^6.1.0",
+    "@uploadthing/shared": "^6.2.0",
+    "axios": "^1.6.5",
     "lucide-react": "^0.453.0",
     "next": "14.2.15",
+    "next-auth": "^4.24.5",
+    "openai": "^4.28.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "react-hook-form": "^7.49.0",
+    "react-hot-toast": "^2.4.1",
+    "stripe": "^14.7.0",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
     "@types/node": "^20.16.11",
@@ -21,6 +37,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
     "postcss": "^8.4.47",
+    "prisma": "^5.7.1",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2"
   }
